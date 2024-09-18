@@ -10,7 +10,7 @@ import lcm
 from lcm_msgs2.servo_cmd_msg import servo_cmd_msg
 from lcm_msgs2.servo_state_msg import servo_state_msg 
 import configparser
-from mors_sim.mors_mini_gym_env import MorsMiniBulletEnv
+from mors_sim.mors_gym_env import MorsBulletEnv
 import numpy as np
 import rospy
 import tf2_ros
@@ -252,7 +252,7 @@ class Hardware_Level_Sim(object):
         self.init_ref_pos[11] = -0.8
 
     def init_simulation(self):
-        self.env = MorsMiniBulletEnv(
+        self.env = MorsBulletEnv(
                 urdf_root=self.urdf_root,
                 sim_freq=self.sim_freq,
                 world=self.world_name,
@@ -287,6 +287,8 @@ class Hardware_Level_Sim(object):
         self.env.set_ext_forces_params(self.external_disturbance_value, 
                                        self.external_disturbance_duration*self.sim_freq, 
                                        self.external_disturbance_interval*self.sim_freq)
+        # self.env.set_joint_max_velocity(40)
+
         if self.camera_enabled:
             self.env.camera.set_params(self.camera_freq, self.pixel_width, self.pixel_height, self.pointcloud_enabled)
 
@@ -327,7 +329,7 @@ class Hardware_Level_Sim(object):
         # print(self.ref_pos, self.ref_vel, self.ref_torq)
         self.env.set_motor_commands(self.ref_pos, self.ref_vel, self.ref_torq)
 
-        observation, rew, done, _ = self.env.step(self.ref_data)
+        observation, rew, done, _, _ = self.env.step(self.ref_data)
 
         self.contact_points, self.contact_flags = self.env.get_contact_flags()
         # print(self.contact_flags)

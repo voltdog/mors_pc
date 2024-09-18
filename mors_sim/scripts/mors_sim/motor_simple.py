@@ -47,4 +47,7 @@ class MotorSimple():
         self.u = self.p + self.d + self.tau_ref
 
         self.e_prev = self.e
+
+        # self.u = np.clip(self.u, -30, 30)
+
         return self.u

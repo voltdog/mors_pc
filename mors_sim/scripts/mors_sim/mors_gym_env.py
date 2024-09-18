@@ -11,9 +11,9 @@ os.sys.path.insert(0, parentdir)
 
 import time
 import random
-import gym
-from gym import spaces
-from gym.utils import seeding
+import gymnasium as gym
+from gymnasium import spaces
+from gymnasium.utils import seeding
 import pybullet
 from pybullet_utils import bullet_client as bc
 import pybullet_data
@@ -60,7 +60,7 @@ BASE_ORIENTATION_MAX = 1.57
 
 # LIDAR_JOINT = 27
 
-class MorsMiniBulletEnv(gym.Env):
+class MorsBulletEnv(gym.Env):
   """
   The gym environment for Mors.
 
@@ -310,7 +310,7 @@ class MorsMiniBulletEnv(gym.Env):
     self.first = True
       
 
-  def reset(self):
+  def reset(self, seed=0):
     """
     Resets all Mors parameters. 
     If hard_reset is True, it also resets simulation.
@@ -340,7 +340,9 @@ class MorsMiniBulletEnv(gym.Env):
 
     self.obs = self._noisy_observation()
     self.obs = self.norm_obs(self.obs)
-    return self.obs
+
+    
+    return self.obs,  {"prob": 1}
   
   def seed(self, seed=None):
     self.np_random, seed = seeding.np_random(seed)
@@ -416,7 +418,7 @@ class MorsMiniBulletEnv(gym.Env):
     if self._normalization == True:
       self.obs = self.norm_obs(self.obs)
     self.action_prev[:] = self.action[:]
-    return self.obs, reward, done, {}
+    return self.obs, reward, done, False, {}
   
   def render(self, mode="rgb_array", close=False):
     if mode != "rgb_array":
