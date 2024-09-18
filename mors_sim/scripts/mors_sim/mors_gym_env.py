@@ -62,7 +62,7 @@ BASE_ORIENTATION_MAX = 1.57
 
 class MorsBulletEnv(gym.Env):
   """
-  The gym environment for Mors.
+  The gym environment for MORS.
 
   It simulates the locomotion of a mors, a quadruped robot. The state space
   include base orientation, the angles, velocities and torques for all the motors and the action
