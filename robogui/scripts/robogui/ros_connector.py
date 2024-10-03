@@ -72,6 +72,10 @@ class ROSParams():
         self.max_abad = 0.0
         self.max_hip = 0.0
         self.max_knee = 0.0
+        self.max_joint_vel = 0.0
+        self.max_joint_torq = 0.0
+        self.max_joint_kp = 0.0
+        self.max_joint_kd = 0.0
 
         self.walk_mode = 0
         self.ef_mode = 0
@@ -132,6 +136,10 @@ class ROS_Connector():
         self.prm.max_abad = rospy.get_param('~joints/max_abad', 1.57)
         self.prm.max_hip = rospy.get_param('~joints/max_hip', 1.57)
         self.prm.max_knee = rospy.get_param('~joints/max_knee', 1.57)
+        self.prm.max_joint_vel = rospy.get_param('~joints/max_vel', 2.0)
+        self.prm.max_joint_torq = rospy.get_param('~joints/max_torq', 2.0)
+        self.prm.max_joint_kp = rospy.get_param('~joints/max_kp', 20.0)
+        self.prm.max_joint_kd = rospy.get_param('~joints/max_kd', 2.0)
 
         self.prm.walk_mode = rospy.get_param('~modes/walk', 0)
         self.prm.ef_mode = rospy.get_param('~modes/ef', 1)
@@ -481,15 +489,17 @@ class ROS_Connector():
             
             if self.__kill == False:
                 # rospy.loginfo("Hello")
+                self.gui_status_msg.data = True
             
                 self.cmd_vel_pub.publish(self.cmd_vel_msg)
                 self.cmd_pose_pub.publish(self.cmd_pose_msg)
                 self.cmd_ef_pos_pub.publish(self.cmd_ef_msg)
                 self.cmd_joint_pos_pub.publish(self.cmd_joint_msg)
-                self.status_pub.publish(True)
+                self.status_pub.publish(self.gui_status_msg)
                 self.rate.sleep()
             else:
-                self.status_pub.publish(False)
+                self.gui_status_msg.data = False
+                self.status_pub.publish(self.gui_status_msg)
                 break
 
             

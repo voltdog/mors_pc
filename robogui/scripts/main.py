@@ -75,24 +75,24 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.ref_body_mins = [-self.ros_prms.max_lin_x, -self.ros_prms.max_lin_y, -self.ros_prms.min_lin_z,
                               -self.ros_prms.max_angle_x, -self.ros_prms.max_angle_y, -self.ros_prms.max_angle_z]
         # self.ref_body_maxes = [0.1, 0.06, 0.035, 0.5, 0.5, 0.5]
-        self.ref_body_maxes = [self.ros_prms.max_lin_x, self.ros_prms.max_lin_y, self.ros_prms.min_lin_z,
+        self.ref_body_maxes = [self.ros_prms.max_lin_x, self.ros_prms.max_lin_y, self.ros_prms.max_lin_z,
                               self.ros_prms.max_angle_x, self.ros_prms.max_angle_y, self.ros_prms.max_angle_z]
         self.ref_body_inits = [0, 0, 0, 0, 0, 0]
 
         self.ref_joint_pos_min = [-self.ros_prms.max_abad]*12
         self.ref_joint_pos_max = [self.ros_prms.max_abad]*12
         self.ref_joint_pos_inits = [0]*12
-        self.ref_joint_vel_min = [-0.5]*12
-        self.ref_joint_vel_max = [0.5]*12
+        self.ref_joint_vel_min = [-self.ros_prms.max_joint_vel]*12
+        self.ref_joint_vel_max = [self.ros_prms.max_joint_vel]*12
         self.ref_joint_vel_inits = [0]*12
-        self.ref_joint_torq_min = [-100]*12
-        self.ref_joint_torq_max = [100]*12
+        self.ref_joint_torq_min = [-self.ros_prms.max_joint_torq]*12
+        self.ref_joint_torq_max = [self.ros_prms.max_joint_torq]*12
         self.ref_joint_torq_inits = [0]*12
         self.ref_joint_kp_min = [0]*12
-        self.ref_joint_kp_max = [24]*12
+        self.ref_joint_kp_max = [self.ros_prms.max_joint_kp]*12
         self.ref_joint_kp_inits = [0]*12
         self.ref_joint_kd_min = [0]*12
-        self.ref_joint_kd_max = [0.5]*12
+        self.ref_joint_kd_max = [self.ros_prms.max_joint_kd]*12
         self.ref_joint_kd_inits = [0]*12
         self.same_kpkd = False
 
@@ -132,7 +132,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.ref_robot_height_min = 0
         self.ref_robot_height_max = 0.15
         self.ref_robot_height_init = 0
-
+ 
         # self.ref_robot_length_min = 0
         # self.ref_robot_length_max = 0.15
         # self.ref_robot_length_init = 0
@@ -205,7 +205,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
             self.line_ref_legs_lst[i].returnPressed.connect(partial(self.line_ref_legs_changed, i))
 
         self.btn_ref_joints.clicked.connect(self.btn_ref_joints_clicked)
-        self.btn_hold_servos.clicked.connect(self.btn_hold_servos_clicked)
+        # self.btn_hold_servos.clicked.connect(self.btn_hold_servos_clicked)
         self.btn_ref_legs.clicked.connect(self.btn_ref_legs_clicked)
         self.btn_ref_body.clicked.connect(self.btn_ref_body_clicked)
 
@@ -264,29 +264,38 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.stacked_layout.setCurrentIndex(0)
         # self.cmd_data.mode = 0
         self.ros_connector.set_mode(self.ros_prms.walk_mode)
+        self.label_11.setText("Walking Control")
 
     def leg_btn_was_clicked(self):
         # self.make_legs_control_widgets()
         self.stacked_layout.setCurrentIndex(1)
         # self.cmd_data.mode = 1
         self.ros_connector.set_mode(self.ros_prms.ef_mode)
+        self.label_11.setText("Legs Control")
 
     def body_btn_was_clicked(self):
         # self.make_body_control_widgets()
         self.stacked_layout.setCurrentIndex(2)
         # self.cmd_data.mode = 2
         self.ros_connector.set_mode(self.ros_prms.body_mode)
+        self.label_11.setText("Body Control")
 
     def joints_btn_was_clicked(self):
         # self.make_joints_control_widgets()
         self.stacked_layout.setCurrentIndex(3)
         # self.cmd_data.mode = 3
+        # self.ros_connector.set_joints_kp([0.0]*12)
+        # self.ros_connector.set_joints_kd([0.0]*12)
+        self.btn_ref_joints_clicked()
         self.ros_connector.set_mode(self.ros_prms.joint_mode)
+        self.label_11.setText("Joints Control")
+        
 
     def cute_btn_was_clicked(self):
         # self.make_cute_control_widgets()
         self.stacked_layout.setCurrentIndex(4)
         # self.cmd_data.mode = 4
+        self.label_11.setText("Cute Actions Mode")
 
     def btn_stand_up_clicked(self):
         self.btn_stand_up.setEnabled(False)
@@ -311,8 +320,16 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         # self.cmd_data.start = 1
         # time.sleep(0.05)
         # self.cmd_data.start = 0
+        self.leg_btn.setEnabled(True)
+        self.body_btn.setEnabled(True)
+        self.cute_actions_btn.setEnabled(True)
+        self.joints_btn.setEnabled(False)
+
+        self.ros_connector.set_mode(self.ros_prms.walk_mode)
+        self.ros_connector.set_joints_kp([0.0]*12)
+        self.ros_connector.set_joints_kd([0.0]*12)
+
         self.ros_connector.set_action(1)
-        
 
     def btn_lay_down_clicked(self):
         self.btn_lay_down.setEnabled(False)
@@ -337,8 +354,12 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         # self.cmd_data.start = 1
         # time.sleep(0.05)
         # self.cmd_data.start = 0
-        self.ros_connector.set_action(2)
+        self.leg_btn.setEnabled(False)
+        self.body_btn.setEnabled(False)
+        self.cute_actions_btn.setEnabled(False)
+        self.joints_btn.setEnabled(True)
 
+        self.ros_connector.set_action(2)
 
     def slider_ref_x_changed(self):
         ref_x_prm = self.slider_ref_x.value() / 1000
@@ -699,12 +720,18 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.joints_widget.setEnabled(enable)
         self.cute_widget.setEnabled(enable)
         self.walking_btn.setEnabled(enable)
-        self.leg_btn.setEnabled(enable)
-        self.body_btn.setEnabled(enable)
-        self.joints_btn.setEnabled(enable)
-        self.cute_actions_btn.setEnabled(enable)
+        # self.leg_btn.setEnabled(enable)
+        # self.body_btn.setEnabled(enable)
+        # self.joints_btn.setEnabled(enable)
+        # self.cute_actions_btn.setEnabled(enable)
 
     def create_walking_control_widgets(self):
+        
+        self.leg_btn.setEnabled(False)
+        self.body_btn.setEnabled(False)
+        self.cute_actions_btn.setEnabled(False)
+        self.joints_btn.setEnabled(True)
+        self.label_11.setText("Walking Control")
 
         line_size = 110
 
@@ -715,7 +742,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         layout_stand.addWidget(self.btn_stand_up)
         layout_stand.addWidget(self.btn_lay_down)
         
-        lbl_ref_x = QLabel("X vel")
+        lbl_ref_x = QLabel("X vel [m/s]")
         self.slider_ref_x = QSlider(Qt.Horizontal)
         self.slider_ref_x.setMinimum(int(self.ref_robot_x_min*1000))
         self.slider_ref_x.setMaximum(int(self.ref_robot_x_max*1000))
@@ -731,7 +758,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         layout_ref_x.addWidget(self.slider_ref_x)
         layout_ref_x.addWidget(self.line_ref_x)
 
-        lbl_ref_y = QLabel("Y vel")
+        lbl_ref_y = QLabel("Y vel [m/s]")
         self.slider_ref_y = QSlider(Qt.Horizontal)
         self.slider_ref_y.setMinimum(int(self.ref_robot_y_min*1000))
         self.slider_ref_y.setMaximum(int(self.ref_robot_y_max*1000))
@@ -747,7 +774,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         layout_ref_y.addWidget(self.slider_ref_y)
         layout_ref_y.addWidget(self.line_ref_y)
 
-        lbl_ref_z = QLabel("Z vel")
+        lbl_ref_z = QLabel("Z vel [m/s]")
         self.slider_ref_z = QSlider(Qt.Horizontal)
         self.slider_ref_z.setMinimum(int(self.ref_robot_z_min*1000))
         self.slider_ref_z.setMaximum(int(self.ref_robot_z_max*1000))
@@ -779,7 +806,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         # layout_ref_freq.addWidget(self.slider_ref_freq)
         # layout_ref_freq.addWidget(self.line_ref_freq)
 
-        lbl_ref_height = QLabel("Stride height")
+        lbl_ref_height = QLabel("Stride height [m]")
         self.slider_ref_height = QSlider(Qt.Horizontal)
         self.slider_ref_height.setMinimum(int(self.ref_robot_height_min*1000))
         self.slider_ref_height.setMaximum(int(self.ref_robot_height_max*1000))
@@ -828,11 +855,11 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
 
         walking_layout = QVBoxLayout()
         walking_layout.addLayout(layout_stand)
+        walking_layout.addLayout(layout_ref_height)
         walking_layout.addLayout(layout_ref_x)
         walking_layout.addLayout(layout_ref_y)
         walking_layout.addLayout(layout_ref_z)
         # walking_layout.addLayout(layout_ref_freq)
-        walking_layout.addLayout(layout_ref_height)
         # walking_layout.addLayout(layout_ref_length)
         # walking_layout.addLayout(layout_ref_gait)
         walking_layout.addWidget(self.btn_stop_walking)
@@ -853,7 +880,10 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.slider_ref_legs_lst = []
         self.line_ref_legs_lst = []
         layout_ref_legs_lst = []
-        lbl_names = ["R1 X", "R1 Y", "R1 Z", "L1 X", "L1 Y", "L1 Z", "R2 X", "R2 Y", "R2 Z", "L2 X", "L2 Y", "L2 Z"]
+        lbl_names = ["R1 X [rad]", "R1 Y [rad]", "R1 Z [rad]", 
+                     "L1 X [rad]", "L1 Y [rad]", "L1 Z [rad]", 
+                     "R2 X [rad]", "R2 Y [rad]", "R2 Z [rad]", 
+                     "L2 X [rad]", "L2 Y [rad]", "L2 Z [rad]"]
         scroll_area_layout = QVBoxLayout()
 
         for i in range(12):
@@ -900,7 +930,8 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         self.slider_ref_body_lst = []
         self.line_ref_body_lst = []
         layout_ref_body_lst = []
-        lbl_names = ["X pos", "Y pos", "Z pos", "X ang", "Y ang", "Z ang"]
+        lbl_names = ["X pos [m]", "Y pos [m]", "Z pos [m]", 
+                     "X ang [rad]", "Y ang [rad]", "Z ang [rad]"]
         
  
         scroll_area_layout = QVBoxLayout()
@@ -976,11 +1007,11 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
 
         scroll_area_layout = QVBoxLayout()
 
-        lbl_min_width = 170
+        lbl_min_width = 50
         line_min_width = 110
 
-        self.btn_hold_servos = QPushButton("Hold cur pos")
-        scroll_area_layout.addWidget(self.btn_hold_servos)
+        # self.btn_hold_servos = QPushButton("Hold cur pos")
+        # scroll_area_layout.addWidget(self.btn_hold_servos)
 
         self.box_same_kpkd = QCheckBox("Same KpKd")
         self.box_same_kpkd.setChecked(False)
@@ -989,7 +1020,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
 
         for i in range(12):
             # Joint positions
-            lbl_ref_pos_lst.append(QLabel("Joint {0} pos".format(i+1)))
+            lbl_ref_pos_lst.append(QLabel("Joint {0} pos [rad]".format(i+1)))
             lbl_ref_pos_lst[i].setMinimumWidth(lbl_min_width)
             self.slider_ref_joint_pos_lst.append(QSlider(Qt.Horizontal))
             self.slider_ref_joint_pos_lst[i].setMinimum(int(self.ref_joint_pos_min[i]*1000))
@@ -1006,7 +1037,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
             layout_ref_pos_lst[i].addWidget(self.line_ref_joint_pos_lst[i])
 
             # joint velocities
-            lbl_ref_vel_lst.append(QLabel("Joint {0} vel".format(i+1)))
+            lbl_ref_vel_lst.append(QLabel("Joint {0} vel [rad/s]".format(i+1)))
             lbl_ref_vel_lst[i].setMinimumWidth(lbl_min_width)
             self.slider_ref_joint_vel_lst.append(QSlider(Qt.Horizontal))
             self.slider_ref_joint_vel_lst[i].setMinimum(int(self.ref_joint_vel_min[i]*1000))
@@ -1022,7 +1053,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
             layout_ref_vel_lst[i].addWidget(self.line_ref_joint_vel_lst[i])
 
             # joint torques
-            lbl_ref_joint_torq_lst.append(QLabel("Joint {0} torq".format(i+1)))
+            lbl_ref_joint_torq_lst.append(QLabel("Joint {0} torq [Nm]".format(i+1)))
             lbl_ref_joint_torq_lst[i].setMinimumWidth(lbl_min_width)
             self.slider_ref_joint_torq_lst.append(QSlider(Qt.Horizontal))
             self.slider_ref_joint_torq_lst[i].setMinimum(int(self.ref_joint_torq_min[i]*1000))
@@ -1096,7 +1127,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         
         self.btn_ref_cute_lst = []
         scroll_area_layout = QVBoxLayout()
-        cute_actions_lst = ["1", "2", "3", "4", "5", "6", "7", "8"]
+        cute_actions_lst = ["Stand Up", "Lay Down", "Give Paw", "Side Roll", "Wave Paw", "Sit", "7", "8"]
 
         for i in range(len(cute_actions_lst)):
             self.btn_ref_cute_lst.append(QPushButton(cute_actions_lst[i]))
@@ -1141,7 +1172,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
     def create_table(self):
         self.table = MyTableWidget()
         self.table.setColumnCount(2)
-        self.table.setColumnWidth(0, 350)
+        self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 100)
         self.table.setHorizontalHeaderLabels(['Name', 'Value'])
         self.verticalLayout_4.addWidget(self.table)
@@ -1173,7 +1204,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         # pass
         path = "config.ini"
         if not os.path.exists(path):
-            self.write_config()
+            print("ebta")
         
         config = configparser.ConfigParser()
         config.read(path)
@@ -1183,12 +1214,23 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         win_pos_x = int(config.get("Window", "pos_x"))
         win_pos_y = int(config.get("Window", "pos_y")) + 74
 
+        if config.has_option("Window", "column_w1"):
+            columnW1 = int(config.get("Window", "column_w1"))
+        else:
+            columnW1 = 150
+        if config.has_option("Window", "column_w2"):
+            columnW2 = int(config.get("Window", "column_w2"))
+        else:
+            columnW2 = 100
+
         sig_lst = []
         for key in config["Table"]:
             sig_lst.append(config["Table"][key])
         
-        print(f"height: {win_height}")
+        # print(f"height: {win_height}")
         self.setGeometry(win_pos_x, win_pos_y, win_width, win_height)
+        self.table.setColumnWidth(0, columnW1)
+        self.table.setColumnWidth(1, columnW2)
 
         while self.table.rowCount() > 0:
             self.table.removeRow(self.table.rowCount()-1)
@@ -1207,8 +1249,11 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
             it = self.table.item(row, 0)
             signal = it.text() if it is not None else ""
             sig_lst.append(signal)
+
+        columnW1 = self.table.columnWidth(0)
+        columnW2 = self.table.columnWidth(1)
         # print(win_width)
-        print(f"height: {win_height}")
+        # print(f"height: {win_height}")
         # print(win_pos.x())
         # print(win_pos.y())
         # print(sig_lst)
@@ -1219,6 +1264,8 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         config.set("Window", "height", str(win_height))
         config.set("Window", "pos_x", str(win_pos.x()))
         config.set("Window", "pos_y", str(win_pos.y()))
+        config.set("Window", "column_w1", str(columnW1))
+        config.set("Window", "column_w2", str(columnW2))
 
         config.add_section("Table")
         for i in range(len(sig_lst)):

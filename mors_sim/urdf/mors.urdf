@@ -878,7 +878,7 @@
     <parent link="base_link"/>
     <child link="imu_link"/>
   </joint>
-  <link name="head_link">
+  <!-- <link name="head_link">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -901,6 +901,6 @@
     <parent link="base_link"/>
     <child link="head_link"/>
     <origin rpy="0 0 0" xyz="0.16 0 0.07"/>
-  </joint>
+  </joint> -->
 </robot>
 
