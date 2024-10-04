@@ -669,19 +669,19 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
 
                 if self.cur_device == 1:
                     self.label_control_device.setText("Dualshock 4")
-                    self.set_enabled_widgets(False)
+                    self.set_enabled_widgets(False, True)
                 elif self.cur_device == 2:
                     self.label_control_device.setText("Radiolink")
-                    self.set_enabled_widgets(False)
+                    self.set_enabled_widgets(False, True)
                 elif self.cur_device == 3:
                     self.label_control_device.setText("Navigation")
-                    self.set_enabled_widgets(False)
+                    self.set_enabled_widgets(False, True)
                 elif self.cur_device == 4:
                     self.label_control_device.setText("PC")
-                    self.set_enabled_widgets(True)
+                    self.set_enabled_widgets(True, False)
                 else:
                     self.label_control_device.setText("Unknown")
-                    self.set_enabled_widgets(False)
+                    self.set_enabled_widgets(False, True)
                 # time.sleep(0.025)
                 col = 0
                 # data = []
@@ -713,17 +713,19 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
                     # data.append(text)
                 # print(data)
                 # print("Hey")
-    def set_enabled_widgets(self, enable : bool):
+    def set_enabled_widgets(self, enable : bool, not_pc=False):
         self.walking_widget.setEnabled(enable)
         self.legs_widget.setEnabled(enable)
         self.body_widget.setEnabled(enable)
         self.joints_widget.setEnabled(enable)
         self.cute_widget.setEnabled(enable)
         self.walking_btn.setEnabled(enable)
-        # self.leg_btn.setEnabled(enable)
-        # self.body_btn.setEnabled(enable)
-        # self.joints_btn.setEnabled(enable)
-        # self.cute_actions_btn.setEnabled(enable)
+
+        if not_pc == True:
+            self.leg_btn.setEnabled(enable)
+            self.body_btn.setEnabled(enable)
+            self.joints_btn.setEnabled(enable)
+            self.cute_actions_btn.setEnabled(enable)
 
     def create_walking_control_widgets(self):
         
@@ -1127,7 +1129,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         
         self.btn_ref_cute_lst = []
         scroll_area_layout = QVBoxLayout()
-        cute_actions_lst = ["Stand Up", "Lay Down", "Give Paw", "Side Roll", "Wave Paw", "Sit", "7", "8"]
+        cute_actions_lst = ["Stand Up", "Lay Down", "Give Right Paw", "Side Roll", "Wave Paw", "Sit", "Give Left Paw", "Action 8"]
 
         for i in range(len(cute_actions_lst)):
             self.btn_ref_cute_lst.append(QPushButton(cute_actions_lst[i]))
