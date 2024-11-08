@@ -1206,7 +1206,7 @@ class MainWindow(QtWidgets.QDialog, Ui_Dialog):
         # pass
         path = "config.ini"
         if not os.path.exists(path):
-            print("ebta")
+            self.write_config()
         
         config = configparser.ConfigParser()
         config.read(path)
